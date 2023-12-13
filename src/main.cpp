@@ -13,7 +13,7 @@ struct VersionDetail
     vector<string> details;
 };
 
-auto parse_version(const string &data, const string &delimiter) noexcept -> vector<int>
+[[nodiscard]] auto parse_version(const string &data, const string &delimiter) noexcept -> vector<int>
 {
     vector<int> result;
     size_t prepos{0};
@@ -54,8 +54,7 @@ struct ParsingContext
         {
             return;
         }
-        auto &current = vd.back();
-        current->details.push_back(line);
+        vd.back()->details.push_back(line);
         return;
     }
 
@@ -66,7 +65,7 @@ struct ParsingContext
         });
     }
 
-    auto serialize() const noexcept -> string
+    [[nodiscard]] auto serialize() const noexcept -> string
     {
         string result;
         for (const auto &i : vd)
@@ -94,7 +93,7 @@ struct ParsingContext
     }
 };
 
-auto trimmed(string &s) noexcept -> string
+[[nodiscard]] auto trimmed(string &s) noexcept -> string
 {
     auto is_not_space = [](unsigned char ch) { return !isspace(ch); };
     s.erase(s.begin(), find_if(s.begin(), s.end(), is_not_space));
