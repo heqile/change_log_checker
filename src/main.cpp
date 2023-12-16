@@ -9,7 +9,7 @@ using namespace std;
 
 struct VersionDetail
 {
-    string tag;
+    string tag{""};
     vector<string> details;
 };
 
@@ -30,6 +30,7 @@ struct VersionDetail
 
 struct ParsingContext
 {
+    string _tag_prefix;
     vector<unique_ptr<VersionDetail>> vd;
 
     void add_line(const string &line) noexcept
@@ -39,11 +40,13 @@ struct ParsingContext
             return;
         }
 
-        const regex reg{R"(\d+\.\d+\.\d+)"};
-        if (regex_match(line, reg))
+        const regex reg{_tag_prefix.empty() ? "(\\d+\\.\\d+\\.\\d+)" : _tag_prefix + " " + "(\\d+\\.\\d+\\.\\d+)"};
+
+        std::smatch match;
+        if (regex_match(line, match, reg))
         {
             vd.push_back(make_unique<VersionDetail>());
-            vd.back()->tag = line;
+            vd.back()->tag = match[1];
             return;
         }
         if (!line.starts_with("-"))
@@ -70,8 +73,8 @@ struct ParsingContext
         string result;
         for (const auto &i : vd)
         {
-            result.append(i->tag);
-            result.append("\n");
+            string &&tag{_tag_prefix.empty() ? i->tag + "\n" : _tag_prefix + " " + i->tag + "\n"};
+            result.append(tag);
             sort(i->details.begin(), i->details.end(), [](const string &s1, const string &s2) {
                 if ((s1.starts_with("- fix") && !s1.starts_with("- fix")) ||
                     (s1.starts_with("- feat") && !s1.starts_with("- feat")) ||
@@ -84,8 +87,7 @@ struct ParsingContext
             });
             for (const auto &j : i->details)
             {
-                result.append(j);
-                result.append("\n");
+                result.append(j + "\n");
             }
             result.append("\n");
         }
@@ -118,7 +120,7 @@ auto main(int argc, char *argv[]) -> int
     }
 
     string line;
-    ParsingContext ctx;
+    ParsingContext ctx{"####"};
     while (getline(file, line))
     {
         line = trimmed(line);
