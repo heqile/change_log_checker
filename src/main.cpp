@@ -9,30 +9,17 @@ using namespace std;
 
 struct VersionDetail
 {
-    string tag{""};
-    vector<string> details;
-};
-
-[[nodiscard]] auto parse_version(const string &data, const string &delimiter) noexcept -> vector<int>
-{
-    vector<int> result;
-    size_t prepos{0};
-    auto i = data.find(delimiter);
-    while (i != -1)
-    {
-        const auto &part = data.substr(prepos, i);
-        result.push_back(stoi(part));
-        prepos = i + delimiter.size();
-        i = data.find(delimiter, prepos);
-    }
-    return result;
+    tuple<int, int, int> tag;
+    vector<pair<int, string>> details;
 };
 
 struct ParsingContext
 {
     string _tag_prefix;
     string _item_prefix;
-    vector<unique_ptr<VersionDetail>> vd;
+    vector<string> _order;
+    vector<shared_ptr<VersionDetail>> vertion_detail{};
+    shared_ptr<VersionDetail> _current_vertion_detail{nullptr};
 
     void add_line(const string &line) noexcept
     {
@@ -41,71 +28,69 @@ struct ParsingContext
             return;
         }
 
-        const regex tag_reg{_tag_prefix.empty() ? "(\\d+\\.\\d+\\.\\d+)" : _tag_prefix + "\\s*(\\d+\\.\\d+\\.\\d+)"};
+        const regex tag_reg{_tag_prefix.empty() ? "(\\d+)\\.(\\d+)\\.(\\d+)"
+                                                : _tag_prefix + "\\s*(\\d+)\\.(\\d+)\\.(\\d+)"};
 
         std::smatch match;
         if (regex_match(line, match, tag_reg))
         {
-            vd.push_back(make_unique<VersionDetail>());
-            vd.back()->tag = match[1];
+            // append new detail object with version tag
+            _current_vertion_detail = make_shared<VersionDetail>();
+            _current_vertion_detail->tag = tuple<int, int, int>{stoi(match[1]), stoi(match[2]), stoi(match[3])};
+            vertion_detail.push_back(_current_vertion_detail);
+            // sort versions
+            sort(vertion_detail.begin(), vertion_detail.end(),
+                 [](const shared_ptr<VersionDetail> &vd1, const shared_ptr<VersionDetail> &vd2) {
+                     return vd1->tag > vd2->tag;
+                 });
             return;
         }
 
+        if (!_current_vertion_detail)
+        {
+            return;
+        }
         std::smatch item_match;
         const regex item_reg{_item_prefix.empty() ? "\\s*(.+)\\s*$" : _item_prefix + "\\s*(.+)\\s*$"};
         if (!regex_match(line, item_match, item_reg))
         {
             return;
         }
-        if (vd.size() == 0)
+        // append detail
+        const string &detail = item_match[1];
+        // sort details
+        using order_vec_t = decltype(_order);
+        order_vec_t::size_type weight = _order.size();
+        for (order_vec_t::size_type i = 0; i < _order.size(); i++)
         {
-            return;
+            if (detail.starts_with(_order[i]))
+            {
+                weight = i;
+                break;
+            }
         }
-        vd.back()->details.push_back(item_match[1]);
+        _current_vertion_detail->details.push_back(pair{weight, detail});
+        sort(begin(_current_vertion_detail->details), end(_current_vertion_detail->details));
         return;
-    }
-
-    void sort_details() noexcept
-    {
-        sort(vd.begin(), vd.end(), [](const unique_ptr<VersionDetail> &vd1, const unique_ptr<VersionDetail> &vd2) {
-            return parse_version(vd1->tag, ".") > parse_version(vd2->tag, ".");
-        });
     }
 
     [[nodiscard]] auto serialize() const noexcept -> string
     {
         string result;
-        for (const auto &i : vd)
+        for (const auto &i : vertion_detail)
         {
-            string &&tag{_tag_prefix.empty() ? i->tag + "\n" : _tag_prefix + " " + i->tag + "\n"};
-            result.append(tag);
-            sort(i->details.begin(), i->details.end(), [](const string &s1, const string &s2) {
-                if ((s1.starts_with("- fix") && !s1.starts_with("- fix")) ||
-                    (s1.starts_with("- feat") && !s1.starts_with("- feat")) ||
-                    (s1.starts_with("- chore") && !s1.starts_with("- chore")))
-                {
-                    return true;
-                }
-
-                return s1 < s2;
-            });
+            const auto [major, minor, patch] = i->tag;
+            auto &&tag = to_string(major) + "." + to_string(minor) + "." + to_string(patch);
+            result += _tag_prefix.empty() ? tag + "\n" : _tag_prefix + " " + tag + "\n";
             for (const auto &j : i->details)
             {
-                result.append(_item_prefix.empty() ? j + "\n" : _item_prefix + " " + j + "\n");
+                result += _item_prefix.empty() ? j.second + "\n" : _item_prefix + " " + j.second + "\n";
             }
-            result.append("\n");
+            result += "\n";
         }
         return result;
     }
 };
-
-[[nodiscard]] auto trimmed(string &s) noexcept -> string
-{
-    auto is_not_space = [](unsigned char ch) { return !isspace(ch); };
-    s.erase(s.begin(), find_if(s.begin(), s.end(), is_not_space));
-    s.erase(find_if(s.rbegin(), s.rend(), is_not_space).base(), s.end());
-    return s;
-}
 
 auto main(int argc, char *argv[]) -> int
 {
@@ -124,14 +109,12 @@ auto main(int argc, char *argv[]) -> int
     }
 
     string line;
-    ParsingContext ctx{"####", "-"};
+    ParsingContext ctx{"####", "-", {"fix", "feat", "chore"}};
     while (getline(file, line))
     {
-        line = trimmed(line);
         ctx.add_line(line);
     }
     file.close();
-    ctx.sort_details();
     std::cout << ctx.serialize();
     return 0;
 }
