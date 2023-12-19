@@ -31,6 +31,7 @@ struct VersionDetail
 struct ParsingContext
 {
     string _tag_prefix;
+    string _item_prefix;
     vector<unique_ptr<VersionDetail>> vd;
 
     void add_line(const string &line) noexcept
@@ -40,16 +41,19 @@ struct ParsingContext
             return;
         }
 
-        const regex reg{_tag_prefix.empty() ? "(\\d+\\.\\d+\\.\\d+)" : _tag_prefix + " " + "(\\d+\\.\\d+\\.\\d+)"};
+        const regex tag_reg{_tag_prefix.empty() ? "(\\d+\\.\\d+\\.\\d+)" : _tag_prefix + "\\s*(\\d+\\.\\d+\\.\\d+)"};
 
         std::smatch match;
-        if (regex_match(line, match, reg))
+        if (regex_match(line, match, tag_reg))
         {
             vd.push_back(make_unique<VersionDetail>());
             vd.back()->tag = match[1];
             return;
         }
-        if (!line.starts_with("-"))
+
+        std::smatch item_match;
+        const regex item_reg{_item_prefix.empty() ? "\\s*(.+)\\s*$" : _item_prefix + "\\s*(.+)\\s*$"};
+        if (!regex_match(line, item_match, item_reg))
         {
             return;
         }
@@ -57,7 +61,7 @@ struct ParsingContext
         {
             return;
         }
-        vd.back()->details.push_back(line);
+        vd.back()->details.push_back(item_match[1]);
         return;
     }
 
@@ -87,7 +91,7 @@ struct ParsingContext
             });
             for (const auto &j : i->details)
             {
-                result.append(j + "\n");
+                result.append(_item_prefix.empty() ? j + "\n" : _item_prefix + " " + j + "\n");
             }
             result.append("\n");
         }
@@ -120,7 +124,7 @@ auto main(int argc, char *argv[]) -> int
     }
 
     string line;
-    ParsingContext ctx{"####"};
+    ParsingContext ctx{"####", "-"};
     while (getline(file, line))
     {
         line = trimmed(line);
@@ -128,6 +132,6 @@ auto main(int argc, char *argv[]) -> int
     }
     file.close();
     ctx.sort_details();
-    std::cout << ctx.serialize() << "\n";
+    std::cout << ctx.serialize();
     return 0;
 }
