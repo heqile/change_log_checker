@@ -44,15 +44,15 @@ class ParsingContext
     ParsingContext(const ParsingContextConfiguration &config) noexcept
         : _config{config}, _tag_reg{_get_tag_reg(config)}, _item_reg{_get_item_reg(config)} {};
 
-    void add_line(const string &line) noexcept
+    void add_line(const string_view &line) noexcept
     {
         if (line.empty())
         {
             return;
         }
 
-        std::smatch match;
-        if (regex_match(line, match, _tag_reg))
+        std::match_results<string_view::const_iterator> match;
+        if (regex_match(line.cbegin(), line.cend(), match, _tag_reg))
         {
             // append new detail object with version tag
             _current_vertion_detail = make_shared<VersionDetail>();
@@ -70,9 +70,9 @@ class ParsingContext
         {
             return;
         }
-        std::smatch item_match;
 
-        if (!regex_match(line, item_match, _item_reg))
+        std::match_results<string_view::const_iterator> item_match;
+        if (!regex_match(line.cbegin(), line.cend(), item_match, _item_reg))
         {
             return;
         }
