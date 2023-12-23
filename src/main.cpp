@@ -60,10 +60,7 @@ class ParsingContext
             _current_vertion_detail->tag = tuple<int, int, int>{stoi(match[1]), stoi(match[2]), stoi(match[3])};
             _vertion_detail.push_back(_current_vertion_detail);
             // sort versions
-            sort(_vertion_detail.begin(), _vertion_detail.end(),
-                 [](const shared_ptr<VersionDetail> &vd1, const shared_ptr<VersionDetail> &vd2) {
-                     return vd1->tag > vd2->tag;
-                 });
+            ranges::sort(_vertion_detail, std::greater<>{}, [](auto const &i) { return i->tag; });
             return;
         }
 
@@ -91,7 +88,7 @@ class ParsingContext
             }
         }
         _current_vertion_detail->details.push_back(pair{weight, detail});
-        sort(begin(_current_vertion_detail->details), end(_current_vertion_detail->details));
+        ranges::sort(_current_vertion_detail->details);
         return;
     };
 
