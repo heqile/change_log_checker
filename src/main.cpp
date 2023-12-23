@@ -77,7 +77,6 @@ class ParsingContext
         // append detail
         const string &detail = item_match[1];
         // sort details
-        using order_vec_t = decltype(_config.order);
         size_t weight, order_list_size = _config.order.size();
         for (size_t i = 0; i < order_list_size; i++)
         {
