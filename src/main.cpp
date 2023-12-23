@@ -30,13 +30,13 @@ class ParsingContext
     vector<shared_ptr<VersionDetail>> _vertion_detail{};
     shared_ptr<VersionDetail> _current_vertion_detail{nullptr};
 
-    static regex _get_tag_reg(const ParsingContextConfiguration &config) noexcept
+    static auto _get_tag_reg(const ParsingContextConfiguration &config) noexcept -> regex
     {
         return regex(config.tag_prefix.empty() ? "(\\d+)\\.(\\d+)\\.(\\d+)"
                                                : config.tag_prefix + "\\s*(\\d+)\\.(\\d+)\\.(\\d+)");
     };
 
-    static regex _get_item_reg(const ParsingContextConfiguration &config) noexcept
+    static auto _get_item_reg(const ParsingContextConfiguration &config) noexcept -> regex
     {
         return regex(config.item_prefix.empty() ? "\\s*(.+)\\s*$" : config.item_prefix + "\\s*(.+)\\s*$");
     };
