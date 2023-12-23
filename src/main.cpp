@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <ranges>
 #include <regex>
 #include <vector>
 
@@ -80,8 +81,8 @@ class ParsingContext
         const string &detail = item_match[1];
         // sort details
         using order_vec_t = decltype(_config.order);
-        order_vec_t::size_type weight, order_list_size = _config.order.size();
-        for (order_vec_t::size_type i = 0; i < order_list_size; i++)
+        size_t weight, order_list_size = _config.order.size();
+        for (size_t i = 0; i < order_list_size; i++)
         {
             if (detail.starts_with(_config.order[i]))
             {
