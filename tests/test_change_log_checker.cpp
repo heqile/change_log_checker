@@ -1,35 +1,43 @@
-// Must include the gtest header to use the testing library
 #include <gtest/gtest.h>
 
-namespace
-{
-// We will test this dummy function but you can test
-// any function from any library that you write too.
-int GetMeaningOfLife()
-{
-    return 42;
-}
-} // namespace
+#include "change_log_checker.hpp"
 
-// All tests must live within TEST* blocks
-// Inside of the TEST block is a standard C++ scope
-// TestTopic defines a topic of our test, e.g. NameOfFunctionTest
-// TrivialEquality represents the name of this particular test
-// It should be descriptive and readable to the user
-// TEST is a macro, i.e., preprocessor replaces it with some code
-TEST(TestTopic, TrivialEquality)
+using namespace change_log_checker;
+
+TEST(TestParingContext, SortVersionDetail)
 {
-    // We can test for equality, inequality etc.
-    // If the equality does not hold, the test fails.
-    // EXPECT_* are macros, i.e., also replaced by the preprocessor.
-    EXPECT_EQ(GetMeaningOfLife(), 42);
+    ParsingContext ctx(ParsingContextConfiguration{"####", "-", {"fix", "feat"}});
+    ctx.add_line("#### 1.3.0");
+    ctx.add_line("- feat(iie): toto");
+    ctx.add_line("- fix(ff_): tata");
+    ctx.add_line("- no prefix");
+    ctx.add_line("- feat(x_x): dota");
+    auto result = ctx.serialize();
+    EXPECT_EQ(result, "#### 1.3.0\n- fix(ff_): tata\n- feat(iie): toto\n- feat(x_x): dota\n- no prefix\n\n");
 }
 
-TEST(TestTopic, MoreEqualityTests)
+TEST(TestParingContext, SortVersionTag)
 {
-    // ASSERT_* is similar to EXPECT_* but stops the execution
-    // of the test if fails.
-    // EXPECT_* continues execution on failure too.
-    ASSERT_EQ(GetMeaningOfLife(), 42) << "Oh no, a mistake!";
-    EXPECT_FLOAT_EQ(23.23F, 23.23F);
+    ParsingContext ctx(ParsingContextConfiguration{"####", "-", {"fix", "feat"}});
+    ctx.add_line("#### 1.3.0");
+    ctx.add_line("- feat(iie): toto");
+    ctx.add_line("#### 1.13.0");
+    ctx.add_line("- feat(iie): toto");
+    ctx.add_line("");
+    ctx.add_line("");
+    ctx.add_line("#### 2.3.0");
+    ctx.add_line("- feat(iie): toto");
+    auto result = ctx.serialize();
+    EXPECT_EQ(result,
+              "#### 2.3.0\n- feat(iie): toto\n\n#### 1.13.0\n- feat(iie): toto\n\n#### 1.3.0\n- feat(iie): toto\n\n");
+}
+
+TEST(TestParingContext, IgnorePrefixedDetail)
+{
+    ParsingContext ctx(ParsingContextConfiguration{"####", "-", {"fix", "feat"}});
+    ctx.add_line("#### 1.3.0");
+    ctx.add_line("- feat(iie): toto");
+    ctx.add_line("nop");
+    auto result = ctx.serialize();
+    EXPECT_EQ(result, "#### 1.3.0\n- feat(iie): toto\n\n");
 }

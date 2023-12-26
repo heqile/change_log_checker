@@ -2,7 +2,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/external/googletest" "external/googletes
 
 add_executable(run_test_change_log_checker test_change_log_checker.cpp)
 
-target_link_libraries(run_test_change_log_checker PRIVATE GTest::gtest_main)
+target_link_libraries(run_test_change_log_checker PRIVATE change_log_checker_lib compiler_flags GTest::gtest_main)
 
 gtest_discover_tests(
     run_test_change_log_checker 
