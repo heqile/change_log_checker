@@ -22,8 +22,8 @@ auto main(int argc, char *argv[]) -> int
         return 1;
     }
 
-    change_log_checker::ParsingContextConfiguration config{"####", "-", {"fix", "feat", "chore"}};
-    change_log_checker::ParsingContext ctx(config);
+    change_log_checker::ParsingContext ctx(
+        change_log_checker::ParsingContextConfiguration{"####", "-", {"fix", "feat", "chore"}});
     string line;
     while (getline(file, line))
     {
