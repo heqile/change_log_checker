@@ -57,7 +57,8 @@ void ParsingContext::add_line(const string_view &line) noexcept
     // append detail
     const string &detail = item_match[1];
     // sort details
-    size_t weight, order_list_size = _config.order.size();
+    size_t order_list_size = _config.order.size();
+    size_t weight{order_list_size};
     for (size_t i = 0; i < order_list_size; i++)
     {
         if (detail.starts_with(_config.order[i]))
