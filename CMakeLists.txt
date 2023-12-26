@@ -13,6 +13,8 @@ add_subdirectory(app)
 
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
+    # Update the submodules here
+    include(cmake/UpdateSubmodules.cmake)
     enable_testing()
     include(GoogleTest)
     add_subdirectory(tests)
