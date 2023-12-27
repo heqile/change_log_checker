@@ -21,7 +21,8 @@ auto main(int argc, char *argv[]) -> int
         std::cout << "Can not open file: " << file_path << "\n";
         return 1;
     }
-    std::cout << change_log_checker::check(file);
+
+    change_log_checker::check(file, std::cout);
 
     file.close();
 

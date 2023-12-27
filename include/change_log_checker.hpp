@@ -40,7 +40,7 @@ class ParsingContext
     [[nodiscard]] auto serialize() const noexcept -> string;
 };
 
-auto check(iostream &stream) noexcept -> string;
+void check(istream &input_stream, ostream &output_stream) noexcept;
 }; // namespace change_log_checker
 
 #endif
