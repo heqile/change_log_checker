@@ -1,3 +1,5 @@
-add_executable(app main.cpp)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-target_link_libraries(app PRIVATE change_log_checker_lib compiler_flags)
+add_executable(change_log_checker main.cpp)
+
+target_link_libraries(change_log_checker PRIVATE change_log_checker_lib compiler_flags)
