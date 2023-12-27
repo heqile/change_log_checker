@@ -4,40 +4,40 @@
 
 using namespace change_log_checker;
 
-TEST(TestParingContext, SortVersionDetail)
+TEST(TestChangeLogChecker, SortVersionDetail)
 {
-    ParsingContext ctx(ParsingContextConfiguration{"####", "-", {"fix", "feat"}});
-    ctx.add_line("#### 1.3.0");
-    ctx.add_line("- feat(iie): toto");
-    ctx.add_line("- fix(ff_): tata");
-    ctx.add_line("- no prefix");
-    ctx.add_line("- feat(x_x): dota");
-    auto result = ctx.serialize();
+    stringstream input;
+    input << "#### 1.3.0\n"
+          << "- feat(iie): toto\n"
+          << "- fix(ff_): tata\n"
+          << "- no prefix\n"
+          << "- feat(x_x): dota\n";
+    auto result = check(input);
     EXPECT_EQ(result, "#### 1.3.0\n- fix(ff_): tata\n- feat(iie): toto\n- feat(x_x): dota\n- no prefix\n\n");
 }
 
-TEST(TestParingContext, SortVersionTag)
+TEST(TestChangeLogChecker, SortVersionTag)
 {
-    ParsingContext ctx(ParsingContextConfiguration{"####", "-", {"fix", "feat"}});
-    ctx.add_line("#### 1.3.0");
-    ctx.add_line("- feat(iie): toto");
-    ctx.add_line("#### 1.13.0");
-    ctx.add_line("- feat(iie): toto");
-    ctx.add_line("");
-    ctx.add_line("");
-    ctx.add_line("#### 2.3.0");
-    ctx.add_line("- feat(iie): toto");
-    auto result = ctx.serialize();
+    stringstream input;
+    input << "#### 1.3.0\n"
+          << "- feat(iie): toto\n"
+          << "#### 1.13.0\n"
+          << "- feat(iie): toto\n"
+          << "\n"
+          << "\n"
+          << "#### 2.3.0\n"
+          << "- feat(iie): toto\n";
+    auto result = check(input);
     EXPECT_EQ(result,
               "#### 2.3.0\n- feat(iie): toto\n\n#### 1.13.0\n- feat(iie): toto\n\n#### 1.3.0\n- feat(iie): toto\n\n");
 }
 
-TEST(TestParingContext, IgnorePrefixedDetail)
+TEST(TestChangeLogChecker, IgnorePrefixedDetail)
 {
-    ParsingContext ctx(ParsingContextConfiguration{"####", "-", {"fix", "feat"}});
-    ctx.add_line("#### 1.3.0");
-    ctx.add_line("- feat(iie): toto");
-    ctx.add_line("nop");
-    auto result = ctx.serialize();
+    stringstream input;
+    input << "#### 1.3.0\n"
+          << "- feat(iie): toto\n"
+          << "nop\n";
+    auto result = check(input);
     EXPECT_EQ(result, "#### 1.3.0\n- feat(iie): toto\n\n");
 }

@@ -89,4 +89,15 @@ auto ParsingContext::serialize() const noexcept -> string
     return result;
 };
 
+auto check(iostream &stream) noexcept -> string
+{
+    change_log_checker::ParsingContext ctx(
+        change_log_checker::ParsingContextConfiguration{"####", "-", {"fix", "feat", "chore"}});
+    string line;
+    while (getline(stream, line))
+    {
+        ctx.add_line(line);
+    }
+    return ctx.serialize();
+};
 }; // namespace change_log_checker

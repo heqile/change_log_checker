@@ -21,15 +21,9 @@ auto main(int argc, char *argv[]) -> int
         std::cout << "Can not open file: " << file_path << "\n";
         return 1;
     }
+    std::cout << change_log_checker::check(file);
 
-    change_log_checker::ParsingContext ctx(
-        change_log_checker::ParsingContextConfiguration{"####", "-", {"fix", "feat", "chore"}});
-    string line;
-    while (getline(file, line))
-    {
-        ctx.add_line(line);
-    }
     file.close();
-    std::cout << ctx.serialize();
+
     return 0;
 };

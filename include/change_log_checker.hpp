@@ -39,6 +39,8 @@ class ParsingContext
 
     [[nodiscard]] auto serialize() const noexcept -> string;
 };
+
+auto check(iostream &stream) noexcept -> string;
 }; // namespace change_log_checker
 
 #endif
