@@ -22,7 +22,8 @@ auto main(int argc, char *argv[]) -> int
         return 1;
     }
 
-    change_log_checker::check(file, std::cout);
+    change_log_checker::ChangeLogCheckerConfiguration config{"####", "-", {"fix", "feat", "chore"}};
+    change_log_checker::check(file, std::cout, config);
 
     file.close();
 

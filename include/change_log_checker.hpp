@@ -13,7 +13,7 @@ struct VersionDetail
     vector<pair<int, string>> details;
 };
 
-struct ParsingContextConfiguration
+struct ChangeLogCheckerConfiguration
 {
     const string tag_prefix;
     const string item_prefix;
@@ -23,24 +23,24 @@ struct ParsingContextConfiguration
 class ParsingContext
 {
   private:
-    const ParsingContextConfiguration _config;
+    const ChangeLogCheckerConfiguration _config;
     const regex _tag_reg;
     const regex _item_reg;
     vector<shared_ptr<VersionDetail>> _vertion_detail{};
     shared_ptr<VersionDetail> _current_vertion_detail{nullptr};
 
-    [[nodiscard]] static auto _get_tag_reg(const ParsingContextConfiguration &config) noexcept -> regex;
-    [[nodiscard]] static auto _get_item_reg(const ParsingContextConfiguration &config) noexcept -> regex;
+    [[nodiscard]] static auto _get_tag_reg(const ChangeLogCheckerConfiguration &config) noexcept -> regex;
+    [[nodiscard]] static auto _get_item_reg(const ChangeLogCheckerConfiguration &config) noexcept -> regex;
 
   public:
-    ParsingContext(const ParsingContextConfiguration &config) noexcept;
+    ParsingContext(const ChangeLogCheckerConfiguration &config) noexcept;
 
     void add_line(const string_view &line) noexcept;
 
     [[nodiscard]] auto serialize() const noexcept -> string;
 };
 
-void check(istream &input_stream, ostream &output_stream) noexcept;
+void check(istream &input_stream, ostream &output_stream, const ChangeLogCheckerConfiguration &config) noexcept;
 }; // namespace change_log_checker
 
 #endif

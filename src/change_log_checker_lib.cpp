@@ -11,18 +11,18 @@ using namespace std;
 namespace change_log_checker
 {
 
-auto ParsingContext::_get_tag_reg(const ParsingContextConfiguration &config) noexcept -> regex
+auto ParsingContext::_get_tag_reg(const ChangeLogCheckerConfiguration &config) noexcept -> regex
 {
     return regex(config.tag_prefix.empty() ? "(\\d+)\\.(\\d+)\\.(\\d+)"
                                            : config.tag_prefix + "\\s*(\\d+)\\.(\\d+)\\.(\\d+)");
 };
 
-auto ParsingContext::_get_item_reg(const ParsingContextConfiguration &config) noexcept -> regex
+auto ParsingContext::_get_item_reg(const ChangeLogCheckerConfiguration &config) noexcept -> regex
 {
     return regex(config.item_prefix.empty() ? "\\s*(.+)\\s*$" : config.item_prefix + "\\s*(.+)\\s*$");
 };
 
-ParsingContext::ParsingContext(const ParsingContextConfiguration &config) noexcept
+ParsingContext::ParsingContext(const ChangeLogCheckerConfiguration &config) noexcept
     : _config{config}, _tag_reg{_get_tag_reg(config)}, _item_reg{_get_item_reg(config)} {};
 
 void ParsingContext::add_line(const string_view &line) noexcept
@@ -89,10 +89,9 @@ auto ParsingContext::serialize() const noexcept -> string
     return result;
 };
 
-void check(istream &input_stream, ostream &output_stream) noexcept
+void check(istream &input_stream, ostream &output_stream, const ChangeLogCheckerConfiguration &config) noexcept
 {
-    change_log_checker::ParsingContext ctx(
-        change_log_checker::ParsingContextConfiguration{"####", "-", {"fix", "feat", "chore"}});
+    change_log_checker::ParsingContext ctx(config);
     string line;
     while (getline(input_stream, line))
     {
