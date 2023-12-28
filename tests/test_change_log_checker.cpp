@@ -8,7 +8,8 @@ void run_check(istream &input_stream, ostream &output_stream,
                const ChangeLogCheckerConfiguration &config = change_log_checker::ChangeLogCheckerConfiguration{
                    "####", "-", {"fix", "feat", "chore"}}) noexcept
 {
-    check(input_stream, output_stream, config);
+    ResultFilePrinter printer(output_stream);
+    check(input_stream, printer, config);
 };
 
 TEST(TestChangeLogChecker, SortVersionDetail)

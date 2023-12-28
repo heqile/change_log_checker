@@ -11,6 +11,52 @@ using namespace std;
 namespace change_log_checker
 {
 
+Options::Options(const vector<string_view> &data) noexcept
+{
+    int i = 0;
+    while (i < data.size())
+    {
+        const string_view &opt = data[i];
+        if (opt == "-i")
+        {
+            inplace_write_file = true;
+            i += 1;
+        }
+        else if (opt == "-c")
+        {
+            i += 1;
+            config_file_path = data[i]; // next element
+            i += 1;
+        }
+        else if (input_file_path.empty())
+        {
+            input_file_path = opt;
+            i += 1;
+        }
+        else
+        {
+            i += 1;
+        }
+    }
+};
+
+ResultFilePrinter::ResultFilePrinter(ostream &output_stream) noexcept : _output_stream(output_stream){};
+
+void ResultFilePrinter::print(const string &data) const noexcept
+{
+    _output_stream.clear();
+    _output_stream.seekp(0);
+    _output_stream << data;
+    _output_stream.flush();
+};
+
+ResultStdOutPrinter::ResultStdOutPrinter(ostream &output_stream) noexcept : _output_stream(output_stream){};
+
+void ResultStdOutPrinter::print(const string &data) const noexcept
+{
+    _output_stream << data;
+};
+
 auto ParsingContext::_get_tag_reg(const ChangeLogCheckerConfiguration &config) noexcept -> regex
 {
     return regex(config.tag_prefix.empty() ? "(\\d+)\\.(\\d+)\\.(\\d+)"
@@ -89,7 +135,7 @@ auto ParsingContext::serialize() const noexcept -> string
     return result;
 };
 
-void check(istream &input_stream, ostream &output_stream, const ChangeLogCheckerConfiguration &config) noexcept
+void check(istream &input_stream, const ResultPrinter &printer, const ChangeLogCheckerConfiguration &config) noexcept
 {
     change_log_checker::ParsingContext ctx(config);
     string line;
@@ -98,9 +144,6 @@ void check(istream &input_stream, ostream &output_stream, const ChangeLogChecker
         ctx.add_line(line);
     }
 
-    output_stream.clear();
-    output_stream.seekp(0);
-    output_stream << ctx.serialize();
-    output_stream.flush();
+    printer.print(ctx.serialize());
 };
 }; // namespace change_log_checker

@@ -7,6 +7,42 @@ using namespace std;
 
 namespace change_log_checker
 {
+struct Options
+{
+    bool inplace_write_file{false};
+    string input_file_path;
+    string config_file_path;
+
+    Options(const vector<string_view> &data) noexcept;
+    // input_file -i -c config.txt
+};
+
+class ResultPrinter
+{
+  public:
+    virtual void print(const string &data) const noexcept = 0;
+};
+
+class ResultFilePrinter : public ResultPrinter
+{
+  private:
+    ostream &_output_stream;
+
+  public:
+    ResultFilePrinter(ostream &output_stream) noexcept;
+    virtual void print(const string &data) const noexcept;
+};
+
+class ResultStdOutPrinter : public ResultPrinter
+{
+  private:
+    ostream &_output_stream;
+
+  public:
+    ResultStdOutPrinter(ostream &output_stream) noexcept;
+    virtual void print(const string &data) const noexcept;
+};
+
 struct VersionDetail
 {
     tuple<int, int, int> tag;
@@ -40,7 +76,7 @@ class ParsingContext
     [[nodiscard]] auto serialize() const noexcept -> string;
 };
 
-void check(istream &input_stream, ostream &output_stream, const ChangeLogCheckerConfiguration &config) noexcept;
+void check(istream &input_stream, const ResultPrinter &printer, const ChangeLogCheckerConfiguration &config) noexcept;
 }; // namespace change_log_checker
 
 #endif
