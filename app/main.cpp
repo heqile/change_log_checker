@@ -32,7 +32,7 @@ auto main(int argc, char *argv[]) -> int
     }
     else
     {
-        check(file, ResultStdOutPrinter(std::cout), config);
+        check(file, ResultStreamPrinter(std::cout), config);
     }
 
     file.close();

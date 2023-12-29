@@ -50,9 +50,9 @@ void ResultFilePrinter::print(const string &data) const noexcept
     _output_stream.flush();
 };
 
-ResultStdOutPrinter::ResultStdOutPrinter(ostream &output_stream) noexcept : _output_stream(output_stream){};
+ResultStreamPrinter::ResultStreamPrinter(ostream &output_stream) noexcept : _output_stream(output_stream){};
 
-void ResultStdOutPrinter::print(const string &data) const noexcept
+void ResultStreamPrinter::print(const string &data) const noexcept
 {
     _output_stream << data;
 };
@@ -86,7 +86,7 @@ void ParsingContext::add_line(const string_view &line) noexcept
         _current_vertion_detail->tag = tuple<int, int, int>{stoi(match[1]), stoi(match[2]), stoi(match[3])};
         _vertion_detail.push_back(_current_vertion_detail);
         // sort versions
-        ranges::sort(_vertion_detail, std::greater<>{}, [](auto const &i) { return i->tag; });
+        ranges::sort(_vertion_detail, std::greater<>{}, &VersionDetail::tag);
         return;
     }
 
@@ -120,19 +120,28 @@ void ParsingContext::add_line(const string_view &line) noexcept
 
 auto ParsingContext::serialize() const noexcept -> string
 {
-    string result;
+    stringstream result;
     for (const auto &i : _vertion_detail)
     {
         const auto [major, minor, patch] = i->tag;
         auto &&tag = to_string(major) + "." + to_string(minor) + "." + to_string(patch);
-        result += _config.tag_prefix.empty() ? tag + "\n" : _config.tag_prefix + " " + tag + "\n";
+        if (!_config.tag_prefix.empty())
+        {
+            result << _config.tag_prefix << " ";
+        }
+        result << tag << "\n";
+
         for (const auto &j : i->details)
         {
-            result += _config.item_prefix.empty() ? j.second + "\n" : _config.item_prefix + " " + j.second + "\n";
+            if (!_config.item_prefix.empty())
+            {
+                result << _config.item_prefix << " ";
+            }
+            result << j.second << "\n";
         }
-        result += "\n";
+        result << "\n";
     }
-    return result;
+    return result.str();
 };
 
 void check(istream &input_stream, const ResultPrinter &printer, const ChangeLogCheckerConfiguration &config) noexcept

@@ -33,13 +33,13 @@ class ResultFilePrinter : public ResultPrinter
     virtual void print(const string &data) const noexcept;
 };
 
-class ResultStdOutPrinter : public ResultPrinter
+class ResultStreamPrinter : public ResultPrinter
 {
   private:
     ostream &_output_stream;
 
   public:
-    ResultStdOutPrinter(ostream &output_stream) noexcept;
+    ResultStreamPrinter(ostream &output_stream) noexcept;
     virtual void print(const string &data) const noexcept;
 };
 
