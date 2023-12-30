@@ -17,25 +17,25 @@ auto main(int argc, char *argv[]) -> int
     }
 
     const auto &file_path = opt.input_file_path;
-    auto file = fstream(file_path);
-    if (!file.is_open())
-    {
-        std::cout << "Can not open file: " << file_path << "\n";
-        return 1;
-    }
+    // auto file = fstream(file_path);
+    // if (!file.is_open())
+    // {
+    //     std::cout << "Can not open file: " << file_path << "\n";
+    //     return 1;
+    // }
 
     ChangeLogCheckerConfiguration config{"####", "-", {"fix", "feat", "chore"}};
+    DataFileReader reader(file_path);
+    auto result = check(reader.stream(), config);
 
     if (opt.inplace_write_file)
     {
-        check(file, ResultFilePrinter(file), config);
+        ResultFilePrinter(file_path).print(result);
     }
     else
     {
-        check(file, ResultStreamPrinter(std::cout), config);
+        ResultStreamPrinter(std::cout).print(result);
     }
-
-    file.close();
 
     return 0;
 };

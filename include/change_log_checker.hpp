@@ -1,4 +1,5 @@
 #ifndef _CHANGE_LOG_CHECKER_HPP
+#include <fstream>
 #include <memory>
 #include <regex>
 #include <vector>
@@ -17,20 +18,39 @@ struct Options
     // input_file -i -c config.txt
 };
 
+class DataReader
+{
+  public:
+    virtual istream &stream() = 0;
+};
+
+class DataFileReader : public DataReader
+{
+  private:
+    ifstream _input_file_stream;
+
+  public:
+    DataFileReader(const string &file_name) noexcept;
+    virtual ~DataFileReader() noexcept;
+
+    virtual istream &stream();
+};
+
 class ResultPrinter
 {
   public:
-    virtual void print(const string &data) const noexcept = 0;
+    virtual void print(const string &data) noexcept = 0;
 };
 
 class ResultFilePrinter : public ResultPrinter
 {
   private:
-    ostream &_output_stream;
+    ofstream _output_file;
 
   public:
-    ResultFilePrinter(ostream &output_stream) noexcept;
-    virtual void print(const string &data) const noexcept;
+    ResultFilePrinter(const string &file_path) noexcept;
+    virtual ~ResultFilePrinter() noexcept;
+    virtual void print(const string &data) noexcept;
 };
 
 class ResultStreamPrinter : public ResultPrinter
@@ -40,7 +60,7 @@ class ResultStreamPrinter : public ResultPrinter
 
   public:
     ResultStreamPrinter(ostream &output_stream) noexcept;
-    virtual void print(const string &data) const noexcept;
+    virtual void print(const string &data) noexcept;
 };
 
 struct VersionDetail
@@ -76,7 +96,7 @@ class ParsingContext
     [[nodiscard]] auto serialize() const noexcept -> string;
 };
 
-void check(istream &input_stream, const ResultPrinter &printer, const ChangeLogCheckerConfiguration &config) noexcept;
+string check(istream &input_stream, const ChangeLogCheckerConfiguration &config) noexcept;
 }; // namespace change_log_checker
 
 #endif

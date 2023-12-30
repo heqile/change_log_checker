@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <memory>
 #include <ranges>
 #include <regex>
@@ -40,19 +42,45 @@ Options::Options(const vector<string_view> &data) noexcept
     }
 };
 
-ResultFilePrinter::ResultFilePrinter(ostream &output_stream) noexcept : _output_stream(output_stream){};
+DataFileReader::DataFileReader(const string &file_path) noexcept : _input_file_stream(ifstream(file_path)){};
 
-void ResultFilePrinter::print(const string &data) const noexcept
+DataFileReader::~DataFileReader() noexcept
 {
-    _output_stream.clear();
-    _output_stream.seekp(0);
-    _output_stream << data;
-    _output_stream.flush();
+    if (_input_file_stream.is_open())
+    {
+        _input_file_stream.close();
+    }
+};
+
+istream &DataFileReader::stream()
+{
+    // if (!_file.is_open())
+    // {
+    //     throw // TODO: exception here
+    // }
+    return _input_file_stream;
+};
+
+ResultFilePrinter::ResultFilePrinter(const string &file_path) noexcept
+    : _output_file(ofstream(file_path, ios_base::trunc)){};
+
+ResultFilePrinter::~ResultFilePrinter() noexcept
+{
+    if (_output_file.is_open())
+    {
+        _output_file.close();
+    }
+}
+
+void ResultFilePrinter::print(const string &data) noexcept
+{
+    _output_file << data;
+    _output_file.flush();
 };
 
 ResultStreamPrinter::ResultStreamPrinter(ostream &output_stream) noexcept : _output_stream(output_stream){};
 
-void ResultStreamPrinter::print(const string &data) const noexcept
+void ResultStreamPrinter::print(const string &data) noexcept
 {
     _output_stream << data;
 };
@@ -144,7 +172,7 @@ auto ParsingContext::serialize() const noexcept -> string
     return result.str();
 };
 
-void check(istream &input_stream, const ResultPrinter &printer, const ChangeLogCheckerConfiguration &config) noexcept
+string check(istream &input_stream, const ChangeLogCheckerConfiguration &config) noexcept
 {
     change_log_checker::ParsingContext ctx(config);
     string line;
@@ -153,6 +181,6 @@ void check(istream &input_stream, const ResultPrinter &printer, const ChangeLogC
         ctx.add_line(line);
     }
 
-    printer.print(ctx.serialize());
+    return ctx.serialize();
 };
 }; // namespace change_log_checker
