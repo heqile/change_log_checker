@@ -42,45 +42,32 @@ Options::Options(const vector<string_view> &data) noexcept
     }
 };
 
-DataFileReader::DataFileReader(const string &file_path) noexcept : _input_file_stream(ifstream(file_path)){};
+DataStringReader::DataStringReader(const string &data) noexcept : _data{data} {};
 
-DataFileReader::~DataFileReader() noexcept
+unique_ptr<istream> DataStringReader::get_istream() const noexcept
 {
-    if (_input_file_stream.is_open())
-    {
-        _input_file_stream.close();
-    }
+    return make_unique<stringstream>(_data);
 };
 
-istream &DataFileReader::stream()
+DataFileReader::DataFileReader(const string &file_path) noexcept : _input_file_path{file_path} {};
+
+unique_ptr<istream> DataFileReader::get_istream() const noexcept
 {
-    // if (!_file.is_open())
-    // {
-    //     throw // TODO: exception here
-    // }
-    return _input_file_stream;
+    return make_unique<ifstream>(_input_file_path);
 };
 
-ResultFilePrinter::ResultFilePrinter(const string &file_path) noexcept
-    : _output_file(ofstream(file_path, ios_base::trunc)){};
+ResultFilePrinter::ResultFilePrinter(const string &file_path) noexcept : _output_file_path{file_path} {};
 
-ResultFilePrinter::~ResultFilePrinter() noexcept
+void ResultFilePrinter::print(const string &data) const noexcept
 {
-    if (_output_file.is_open())
-    {
-        _output_file.close();
-    }
-}
-
-void ResultFilePrinter::print(const string &data) noexcept
-{
-    _output_file << data;
-    _output_file.flush();
+    ofstream output_file(_output_file_path, ios_base::trunc);
+    output_file << data;
+    output_file.flush();
 };
 
-ResultStreamPrinter::ResultStreamPrinter(ostream &output_stream) noexcept : _output_stream(output_stream){};
+ResultStreamPrinter::ResultStreamPrinter(ostream &output_stream) noexcept : _output_stream{output_stream} {};
 
-void ResultStreamPrinter::print(const string &data) noexcept
+void ResultStreamPrinter::print(const string &data) const noexcept
 {
     _output_stream << data;
 };
@@ -107,7 +94,7 @@ void ParsingContext::add_line(const string_view &line) noexcept
     }
 
     std::match_results<string_view::const_iterator> match;
-    if (regex_match(line.cbegin(), line.cend(), match, _tag_reg))
+    if (regex_match(cbegin(line), cend(line), match, _tag_reg))
     {
         // append new detail object with version tag
         _current_vertion_detail = make_shared<VersionDetail>();
@@ -124,14 +111,14 @@ void ParsingContext::add_line(const string_view &line) noexcept
     }
 
     std::match_results<string_view::const_iterator> item_match;
-    if (!regex_match(line.cbegin(), line.cend(), item_match, _item_reg))
+    if (!regex_match(cbegin(line), cend(line), item_match, _item_reg))
     {
         return;
     }
     // append detail
     const string &detail = item_match[1];
     // sort details
-    size_t order_list_size = _config.order.size();
+    size_t order_list_size{_config.order.size()};
     size_t weight{order_list_size};
     for (size_t i = 0; i < order_list_size; i++)
     {
@@ -172,15 +159,18 @@ auto ParsingContext::serialize() const noexcept -> string
     return result.str();
 };
 
-string check(istream &input_stream, const ChangeLogCheckerConfiguration &config) noexcept
+void check(const DataReader &data_reader, unique_ptr<ResultPrinter> result_printer,
+           const ChangeLogCheckerConfiguration &config) noexcept
 {
     change_log_checker::ParsingContext ctx(config);
     string line;
-    while (getline(input_stream, line))
+    auto input_stream = data_reader.get_istream();
+    while (getline(*input_stream, line))
     {
         ctx.add_line(line);
     }
 
-    return ctx.serialize();
+    result_printer->print(ctx.serialize());
+    return;
 };
 }; // namespace change_log_checker

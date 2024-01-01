@@ -7,6 +7,18 @@
 using namespace std;
 using namespace change_log_checker;
 
+auto create_result_printer(const Options &opt) noexcept -> unique_ptr<ResultPrinter>
+{
+    if (opt.inplace_write_file)
+    {
+        return make_unique<ResultFilePrinter>(opt.input_file_path);
+    }
+    else
+    {
+        return make_unique<ResultStreamPrinter>(std::cout);
+    }
+};
+
 auto main(int argc, char *argv[]) -> int
 {
     Options opt(vector<string_view>(argv + 1, argv + argc));
@@ -26,16 +38,8 @@ auto main(int argc, char *argv[]) -> int
 
     ChangeLogCheckerConfiguration config{"####", "-", {"fix", "feat", "chore"}};
     DataFileReader reader(file_path);
-    auto result = check(reader.stream(), config);
 
-    if (opt.inplace_write_file)
-    {
-        ResultFilePrinter(file_path).print(result);
-    }
-    else
-    {
-        ResultStreamPrinter(std::cout).print(result);
-    }
+    check(reader, create_result_printer(opt), config);
 
     return 0;
 };

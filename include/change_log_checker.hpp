@@ -21,36 +21,45 @@ struct Options
 class DataReader
 {
   public:
-    virtual istream &stream() = 0;
+    virtual unique_ptr<istream> get_istream() const noexcept = 0;
+};
+
+class DataStringReader : public DataReader
+{
+  private:
+    const string _data;
+
+  public:
+    DataStringReader(const string &data) noexcept;
+
+    virtual unique_ptr<istream> get_istream() const noexcept;
 };
 
 class DataFileReader : public DataReader
 {
   private:
-    ifstream _input_file_stream;
+    const string _input_file_path;
 
   public:
     DataFileReader(const string &file_name) noexcept;
-    virtual ~DataFileReader() noexcept;
 
-    virtual istream &stream();
+    virtual unique_ptr<istream> get_istream() const noexcept;
 };
 
 class ResultPrinter
 {
   public:
-    virtual void print(const string &data) noexcept = 0;
+    virtual void print(const string &data) const noexcept = 0;
 };
 
 class ResultFilePrinter : public ResultPrinter
 {
   private:
-    ofstream _output_file;
+    string _output_file_path;
 
   public:
     ResultFilePrinter(const string &file_path) noexcept;
-    virtual ~ResultFilePrinter() noexcept;
-    virtual void print(const string &data) noexcept;
+    virtual void print(const string &data) const noexcept;
 };
 
 class ResultStreamPrinter : public ResultPrinter
@@ -60,7 +69,7 @@ class ResultStreamPrinter : public ResultPrinter
 
   public:
     ResultStreamPrinter(ostream &output_stream) noexcept;
-    virtual void print(const string &data) noexcept;
+    virtual void print(const string &data) const noexcept;
 };
 
 struct VersionDetail
@@ -96,7 +105,8 @@ class ParsingContext
     [[nodiscard]] auto serialize() const noexcept -> string;
 };
 
-string check(istream &input_stream, const ChangeLogCheckerConfiguration &config) noexcept;
+void check(const DataReader &data_reader, unique_ptr<ResultPrinter> result_printer,
+           const ChangeLogCheckerConfiguration &config) noexcept;
 }; // namespace change_log_checker
 
 #endif
