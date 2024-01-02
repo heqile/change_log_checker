@@ -43,14 +43,14 @@ Options::Options(const vector<string_view> &data) noexcept
 
 DataStringReader::DataStringReader(string_view data) noexcept : _data{data} {};
 
-unique_ptr<istream> DataStringReader::get_istream() const noexcept
+auto DataStringReader::get_istream() const noexcept -> unique_ptr<istream>
 {
     return make_unique<stringstream>(_data);
 };
 
 DataFileReader::DataFileReader(string_view file_path) noexcept : _input_file_path{file_path} {};
 
-unique_ptr<istream> DataFileReader::get_istream() const noexcept
+auto DataFileReader::get_istream() const noexcept -> unique_ptr<istream>
 {
     return make_unique<ifstream>(_input_file_path);
 };
