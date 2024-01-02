@@ -4,11 +4,11 @@
 
 using namespace change_log_checker;
 
-void run_check(const stringstream &data, ostream &output_stream,
+void run_check(string_view data, ostream &output_stream,
                const ChangeLogCheckerConfiguration &config = change_log_checker::ChangeLogCheckerConfiguration{
                    "####", "-", {"fix", "feat", "chore"}}) noexcept
 {
-    DataStringReader reader(data.str());
+    DataStringReader reader(data);
     check(reader, make_unique<ResultStreamPrinter>(output_stream), config);
 };
 
@@ -21,7 +21,7 @@ TEST(TestChangeLogChecker, SortVersionDetail)
           << "- no prefix\n"
           << "- feat(x_x): dota\n";
     stringstream result;
-    run_check(input, result);
+    run_check(input.str(), result);
     EXPECT_EQ(result.str(), "#### 1.3.0\n- fix(ff_): tata\n- feat(iie): toto\n- feat(x_x): dota\n- no prefix\n\n");
 }
 
@@ -37,7 +37,7 @@ TEST(TestChangeLogChecker, SortVersionTag)
           << "#### 2.3.0\n"
           << "- feat(iie): toto\n";
     stringstream result;
-    run_check(input, result);
+    run_check(input.str(), result);
     EXPECT_EQ(result.str(),
               "#### 2.3.0\n- feat(iie): toto\n\n#### 1.13.0\n- feat(iie): toto\n\n#### 1.3.0\n- feat(iie): toto\n\n");
 }
@@ -49,6 +49,6 @@ TEST(TestChangeLogChecker, IgnorePrefixedDetail)
           << "- feat(iie): toto\n"
           << "nop\n";
     stringstream result;
-    run_check(input, result);
+    run_check(input.str(), result);
     EXPECT_EQ(result.str(), "#### 1.3.0\n- feat(iie): toto\n\n");
 }

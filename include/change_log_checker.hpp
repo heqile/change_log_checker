@@ -30,7 +30,7 @@ class DataStringReader : public DataReader
     const string _data;
 
   public:
-    DataStringReader(const string &data) noexcept;
+    DataStringReader(string_view data) noexcept;
 
     virtual unique_ptr<istream> get_istream() const noexcept;
 };
@@ -41,7 +41,7 @@ class DataFileReader : public DataReader
     const string _input_file_path;
 
   public:
-    DataFileReader(const string &file_name) noexcept;
+    DataFileReader(string_view file_name) noexcept;
 
     virtual unique_ptr<istream> get_istream() const noexcept;
 };
@@ -49,17 +49,17 @@ class DataFileReader : public DataReader
 class ResultPrinter
 {
   public:
-    virtual void print(const string &data) const noexcept = 0;
+    virtual void print(string_view data) const noexcept = 0;
 };
 
 class ResultFilePrinter : public ResultPrinter
 {
   private:
-    string _output_file_path;
+    const string _output_file_path;
 
   public:
-    ResultFilePrinter(const string &file_path) noexcept;
-    virtual void print(const string &data) const noexcept;
+    ResultFilePrinter(string_view file_path) noexcept;
+    virtual void print(string_view data) const noexcept;
 };
 
 class ResultStreamPrinter : public ResultPrinter
@@ -69,7 +69,7 @@ class ResultStreamPrinter : public ResultPrinter
 
   public:
     ResultStreamPrinter(ostream &output_stream) noexcept;
-    virtual void print(const string &data) const noexcept;
+    virtual void print(string_view data) const noexcept;
 };
 
 struct VersionDetail
@@ -100,7 +100,7 @@ class ParsingContext
   public:
     ParsingContext(const ChangeLogCheckerConfiguration &config) noexcept;
 
-    void add_line(const string_view &line) noexcept;
+    void add_line(string_view line) noexcept;
 
     [[nodiscard]] auto serialize() const noexcept -> string;
 };

@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -42,23 +41,23 @@ Options::Options(const vector<string_view> &data) noexcept
     }
 };
 
-DataStringReader::DataStringReader(const string &data) noexcept : _data{data} {};
+DataStringReader::DataStringReader(string_view data) noexcept : _data{data} {};
 
 unique_ptr<istream> DataStringReader::get_istream() const noexcept
 {
     return make_unique<stringstream>(_data);
 };
 
-DataFileReader::DataFileReader(const string &file_path) noexcept : _input_file_path{file_path} {};
+DataFileReader::DataFileReader(string_view file_path) noexcept : _input_file_path{file_path} {};
 
 unique_ptr<istream> DataFileReader::get_istream() const noexcept
 {
     return make_unique<ifstream>(_input_file_path);
 };
 
-ResultFilePrinter::ResultFilePrinter(const string &file_path) noexcept : _output_file_path{file_path} {};
+ResultFilePrinter::ResultFilePrinter(string_view file_path) noexcept : _output_file_path{file_path} {};
 
-void ResultFilePrinter::print(const string &data) const noexcept
+void ResultFilePrinter::print(string_view data) const noexcept
 {
     ofstream output_file(_output_file_path, ios_base::trunc);
     output_file << data;
@@ -67,7 +66,7 @@ void ResultFilePrinter::print(const string &data) const noexcept
 
 ResultStreamPrinter::ResultStreamPrinter(ostream &output_stream) noexcept : _output_stream{output_stream} {};
 
-void ResultStreamPrinter::print(const string &data) const noexcept
+void ResultStreamPrinter::print(string_view data) const noexcept
 {
     _output_stream << data;
 };
@@ -86,7 +85,7 @@ auto ParsingContext::_get_item_reg(const ChangeLogCheckerConfiguration &config) 
 ParsingContext::ParsingContext(const ChangeLogCheckerConfiguration &config) noexcept
     : _config{config}, _tag_reg{_get_tag_reg(config)}, _item_reg{_get_item_reg(config)} {};
 
-void ParsingContext::add_line(const string_view &line) noexcept
+void ParsingContext::add_line(string_view line) noexcept
 {
     if (line.empty())
     {
@@ -116,7 +115,7 @@ void ParsingContext::add_line(const string_view &line) noexcept
         return;
     }
     // append detail
-    const string &detail = item_match[1];
+    string detail = item_match[1];
     // sort details
     size_t order_list_size{_config.order.size()};
     size_t weight{order_list_size};
@@ -128,7 +127,7 @@ void ParsingContext::add_line(const string_view &line) noexcept
             break;
         }
     }
-    _current_vertion_detail->details.push_back(pair{weight, detail});
+    _current_vertion_detail->details.push_back(pair{weight, std::move(detail)});
     ranges::sort(_current_vertion_detail->details);
     return;
 };
