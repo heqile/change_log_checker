@@ -21,7 +21,7 @@ struct Options
 class DataReader
 {
   public:
-    virtual unique_ptr<istream> get_istream() const noexcept = 0;
+    [[nodiscard]] virtual unique_ptr<istream> get_istream() const noexcept = 0;
 };
 
 class DataStringReader : public DataReader
@@ -32,7 +32,7 @@ class DataStringReader : public DataReader
   public:
     DataStringReader(string_view data) noexcept;
 
-    virtual unique_ptr<istream> get_istream() const noexcept;
+    [[nodiscard]] virtual unique_ptr<istream> get_istream() const noexcept;
 };
 
 class DataFileReader : public DataReader
@@ -43,7 +43,7 @@ class DataFileReader : public DataReader
   public:
     DataFileReader(string_view file_name) noexcept;
 
-    virtual unique_ptr<istream> get_istream() const noexcept;
+    [[nodiscard]] virtual unique_ptr<istream> get_istream() const noexcept;
 };
 
 class ResultPrinter
