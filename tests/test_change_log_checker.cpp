@@ -4,12 +4,11 @@
 
 using namespace change_log_checker;
 
-void run_check(string_view data, const shared_ptr<ostream> &output_stream,
-               const ChangeLogCheckerConfiguration &config = change_log_checker::ChangeLogCheckerConfiguration{
-                   "####", "-", {"fix", "feat", "chore"}}) noexcept
+void run_check(string_view data, const shared_ptr<ostream> &output_stream) noexcept
 {
     DataStringReader reader(data);
-    check(reader, make_unique<ResultStreamPrinter>(output_stream), config);
+    check(reader, make_unique<ResultStreamPrinter>(output_stream),
+          change_log_checker::ChangeLogCheckerConfiguration{"####", "-", {"fix", "feat", "chore"}});
 };
 
 TEST(TestChangeLogChecker, SortVersionDetail)
