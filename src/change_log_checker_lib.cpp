@@ -64,11 +64,12 @@ void ResultFilePrinter::print(string_view data) const noexcept
     output_file.flush();
 };
 
-ResultStreamPrinter::ResultStreamPrinter(ostream &output_stream) noexcept : _output_stream{output_stream} {};
+ResultStreamPrinter::ResultStreamPrinter(const shared_ptr<ostream> &output_stream) noexcept
+    : _output_stream{output_stream} {};
 
 void ResultStreamPrinter::print(string_view data) const noexcept
 {
-    _output_stream << data;
+    *_output_stream << data;
 };
 
 auto ParsingContext::_get_tag_reg(const ChangeLogCheckerConfiguration &config) noexcept -> regex

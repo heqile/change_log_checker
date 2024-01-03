@@ -4,7 +4,7 @@
 
 using namespace change_log_checker;
 
-void run_check(string_view data, ostream &output_stream,
+void run_check(string_view data, const shared_ptr<ostream> &output_stream,
                const ChangeLogCheckerConfiguration &config = change_log_checker::ChangeLogCheckerConfiguration{
                    "####", "-", {"fix", "feat", "chore"}}) noexcept
 {
@@ -20,9 +20,9 @@ TEST(TestChangeLogChecker, SortVersionDetail)
           << "- fix(ff_): tata\n"
           << "- no prefix\n"
           << "- feat(x_x): dota\n";
-    stringstream result;
+    shared_ptr<ostringstream> result = make_shared<ostringstream>();
     run_check(input.str(), result);
-    EXPECT_EQ(result.str(), "#### 1.3.0\n- fix(ff_): tata\n- feat(iie): toto\n- feat(x_x): dota\n- no prefix\n\n");
+    EXPECT_EQ(result->str(), "#### 1.3.0\n- fix(ff_): tata\n- feat(iie): toto\n- feat(x_x): dota\n- no prefix\n\n");
 }
 
 TEST(TestChangeLogChecker, SortVersionTag)
@@ -36,9 +36,9 @@ TEST(TestChangeLogChecker, SortVersionTag)
           << "\n"
           << "#### 2.3.0\n"
           << "- feat(iie): toto\n";
-    stringstream result;
+    shared_ptr<ostringstream> result = make_shared<ostringstream>();
     run_check(input.str(), result);
-    EXPECT_EQ(result.str(),
+    EXPECT_EQ(result->str(),
               "#### 2.3.0\n- feat(iie): toto\n\n#### 1.13.0\n- feat(iie): toto\n\n#### 1.3.0\n- feat(iie): toto\n\n");
 }
 
@@ -48,7 +48,7 @@ TEST(TestChangeLogChecker, IgnorePrefixedDetail)
     input << "#### 1.3.0\n"
           << "- feat(iie): toto\n"
           << "nop\n";
-    stringstream result;
+    shared_ptr<ostringstream> result = make_shared<ostringstream>();
     run_check(input.str(), result);
-    EXPECT_EQ(result.str(), "#### 1.3.0\n- feat(iie): toto\n\n");
+    EXPECT_EQ(result->str(), "#### 1.3.0\n- feat(iie): toto\n\n");
 }

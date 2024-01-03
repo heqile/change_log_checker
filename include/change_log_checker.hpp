@@ -65,10 +65,10 @@ class ResultFilePrinter : public ResultPrinter
 class ResultStreamPrinter : public ResultPrinter
 {
   private:
-    ostream &_output_stream;
+    shared_ptr<ostream> _output_stream;
 
   public:
-    ResultStreamPrinter(ostream &output_stream) noexcept;
+    ResultStreamPrinter(const shared_ptr<ostream> &output_stream) noexcept;
     virtual void print(string_view data) const noexcept;
 };
 

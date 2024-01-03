@@ -15,7 +15,7 @@ auto create_result_printer(const Options &opt) noexcept -> unique_ptr<ResultPrin
     }
     else
     {
-        return make_unique<ResultStreamPrinter>(std::cout);
+        return make_unique<ResultStreamPrinter>(shared_ptr<ostream>(&std::cout));
     }
 };
 
