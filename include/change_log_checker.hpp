@@ -27,7 +27,7 @@ class DataReader
 class DataStringReader : public DataReader
 {
   private:
-    const string _data;
+    string _data;
 
   public:
     DataStringReader(string_view data) noexcept;
@@ -38,7 +38,7 @@ class DataStringReader : public DataReader
 class DataFileReader : public DataReader
 {
   private:
-    const string _input_file_path;
+    string _input_file_path;
 
   public:
     DataFileReader(string_view file_name) noexcept;
@@ -80,17 +80,17 @@ struct VersionDetail
 
 struct ChangeLogCheckerConfiguration
 {
-    const string tag_prefix;
-    const string item_prefix;
-    const vector<string> order;
+    string tag_prefix;
+    string item_prefix;
+    vector<string> order;
 };
 
 class ParsingContext
 {
   private:
-    const ChangeLogCheckerConfiguration _config;
-    const regex _tag_reg;
-    const regex _item_reg;
+    ChangeLogCheckerConfiguration _config;
+    regex _tag_reg;
+    regex _item_reg;
     vector<shared_ptr<VersionDetail>> _vertion_detail{};
     shared_ptr<VersionDetail> _current_vertion_detail{nullptr};
 
