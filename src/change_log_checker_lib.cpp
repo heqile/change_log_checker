@@ -146,13 +146,13 @@ auto ParsingContext::serialize() const noexcept -> string
         }
         result << tag << "\n";
 
-        for (const auto &j : i->details)
+        for (const auto &[weight, detail] : i->details)
         {
             if (!_config.item_prefix.empty())
             {
                 result << _config.item_prefix << " ";
             }
-            result << j.second << "\n";
+            result << detail << "\n";
         }
         result << "\n";
     }
